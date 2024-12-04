@@ -31,6 +31,41 @@ app.post('/', (req, res ) => {
     res.status(200).send(novoCarro); //Retorna o carro add com o status 200(OK).
 });
 
+app.put('/:sigla', (req,res) =>{
+    const siglaInformada = req.params.sigla.toUpperCase();
+    const carroSelecionado = carros2024.find(c => c.sigla === siglaInformada);
+    if (!carroSelecionado) {
+        res
+        .status(404)
+        .send(
+            'Não existe um carro com a sigla informada!'
+        );
+        return;
+    };
+    const campos = Object.keys(req.body);
+    for (let campo of campos) {
+            carroSelecionado[campo] = req.body[campo];
+    }
+    res.status(200).send(carroSelecionado);
+});
+
+app.delete('/:sigla', (req,res) => {
+    const siglaInformada = req.params.sigla.toUpperCase(); //Obtém a sigla.
+    const IndiceCarroSelecionado = carros2024.findIndex( 
+        (c) => c.sigla === siglaInformada //Busca o indice do carro na lista.
+    );
+    if (IndiceCarroSelecionado === -1){
+        // Se o carro não for encontrado/indice retorna -1.
+        res
+        .status(404)
+        .send(
+            'Não existe um carro com a sigla informada' // Mensagem de erro.
+        );
+    return;
+    };
+    const carroRemovido = carros2024.splice(IndiceCarroSelecionado, 1);
+    res.status(200).send(carroRemovido); //Retorna o carro removido com OK.
+});
 
 // Inicia o servidor na porta 3000:
 app.listen(3000,() => console.log("Servidor Rodando com Sucesso"));
