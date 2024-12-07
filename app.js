@@ -1,6 +1,8 @@
 import carros2024 from './tabelacarros.js';
 import express from 'express';
 
+import { modeloCarro, modeloAtualizacaoCarro } from './validacao.js';
+
 const app = express();
 
 app.use(express.json());
@@ -27,8 +29,15 @@ app.get('/:sigla',(requisicao, resposta) => {
 
 app.post('/', (req, res ) => {
     const novoCarro = req.body; //Obtém o corpo enviado para incluir um carro.
+    //JOI
+    const{ error } = modeloCarro.validate(novoCarro);
+    if (error) {
+        // Se houver erro retorna erro 400 (Bad Request).
+        res.status(400).send(error);
+        return;
+    }
     carros2024.push(novoCarro); //Adiciona o novo carro a array.
-    res.status(200).send(novoCarro); //Retorna o carro add com o status 200(OK).
+    res.status(201).send(novoCarro); //Retorna o carro add com o status 201(OK).
 });
 
 app.put('/:sigla', (req,res) =>{
@@ -41,10 +50,17 @@ app.put('/:sigla', (req,res) =>{
             'Não existe um carro com a sigla informada!'
         );
         return;
-    };
+    }
+    // Apartir daqui JOI
+    const { error } = modeloAtualizacaoCarro.validate(req.body);
+    if (error) {
+        // Se houver erro no modelo/validação retorna erro.
+        res.status(400).send(error);
+        return;
+    }
     const campos = Object.keys(req.body);
     for (let campo of campos) {
-            carroSelecionado[campo] = req.body[campo];
+        carroSelecionado[campo] = req.body[campo];
     }
     res.status(200).send(carroSelecionado);
 });
@@ -54,7 +70,7 @@ app.delete('/:sigla', (req,res) => {
     const IndiceCarroSelecionado = carros2024.findIndex( 
         (c) => c.sigla === siglaInformada //Busca o indice do carro na lista.
     );
-    if (IndiceCarroSelecionado === -1){
+    if (IndiceCarroSelecionado === -1) {
         // Se o carro não for encontrado/indice retorna -1.
         res
         .status(404)
